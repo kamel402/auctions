@@ -1,0 +1,138 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    
+    <!-- Container -->
+    <div class="container-fluid">
+        <!-- Title -->
+        <h2>Listing: {{ listing.title }}</h2>
+        <!-- Rows -->
+        <div class="row">
+            {% if listing.image %}
+                <!-- Image -->
+                <div class="col-md-8">
+                    <img src="{{ listing.image }}" class="img" style="height: 350px; background-size:cover">
+                </div>
+            {% endif %}
+            <!-- Description -->
+            <div class="col-md-8">
+                <p>{{ listing.description }}</p>
+            </div>
+            <!-- Price -->
+            <div class="col-md-8">
+                <h2>${{ listing.price }}</h2>
+            </div>
+
+            {% if listing.is_active %}
+                <!-- Bid info -->
+                <div class="col-md-8">
+                    
+                    {% if is_current_bid %}
+                        <small>{{n_bids}} bid(s) so far, Your bid is the current bid.</small>
+                    {% else %}
+                        <small>{{n_bids}} bid(s) so far.</small>
+                    {% endif %}
+                    
+                </div>
+                <!-- Bid options -->
+                <div class="col-md-12">
+                    {% if listing.author == user %}
+                        <form method="POST" action="{% url 'close_listing' listing.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger"> Close Auction</button>
+                        </form>
+                    {% else %}
+                        <form method="POST" action="{% url 'bid' listing.id %}">
+                            {% csrf_token %}
+                            <input type="number" name="bid" placeholder="Bid" class="form-control"step="0.01">
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-danger" role="alert">
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            {% endif%}
+                            <button type="submit" class="btn btn-primary" >Place Bid</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="col-md-8">
+                        
+                    {% if is_current_bid %}
+                        <small>Auction closed, and you are the winner.</small>
+                    {% else %}
+                        <small>Auction closed.</small>
+                    {% endif %}
+                    
+                </div>
+            {% endif %}
+            <!-- Watchlist -->
+            <div class="col-md-8 mt-3">
+                
+                <form method="POST" action="{% url 'watchlist' listing.id %}">
+                    {% csrf_token %}
+                    {% if in_watchlist %}
+                        <input type="hidden" name="add" value="no">
+                        <button type="submit" class="btn btn-danger" >Remove from watchlist</button>
+                    {% else %}
+                        <input type="hidden" name="add" value="yes">
+                        <button type="submit" class="btn btn-secondary" >Add to watchlist</button>
+                    {% endif %}
+                </form>
+            </div>
+            <!-- Details -->
+            <div class="col-md-8 mt-4">
+                <h2>Details</h2>
+            </div>
+            
+            <div class="col-md-8 mt-4">
+                <ul>
+                    <li>Listed by: {{ listing.author }}</li>
+                    {% if listing.category %}
+                        <li>Category: {{ listing.category }}</li>
+                    {% else %}
+                        <li>Category: No Category Listed</li>
+                    {% endif%}
+                </ul>
+            </div>
+            <!-- Comments -->
+            <div class="col-md-8 mt-4">
+                <div class="card shadow-0 border" style="background-color: #f0f2f5;">
+                    <div class="card-body p-4">
+                    
+                        {% for comment in comments %}
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                <p>{{ comment.content }}</p>
+                    
+                                <div class="d-flex justify-content-between">
+                                    <div class="d-flex flex-row align-items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
+                                            <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                                        </svg>
+                                    <p class="small mb-0 ms-2">&nbsp;{{ comment.user }}</p>
+                                    </div>
+                                
+                                </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <div class="form-outline mb-4">
+                            <form method="POST" action="{% url 'comment' listing.id %}">
+                                {% csrf_token %}
+                                <input type="text" name="content" class="form-control" placeholder="Type your comment..." />
+                                <div class="form-outline mb-4"></div>
+                                <button type="submit" class="btn btn-info" style="float: right;">+ Add a comment</button>
+                            </form>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+        </div>
+    </div>
+
+{% endblock %}
